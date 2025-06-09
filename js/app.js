@@ -62,13 +62,13 @@ function eliminarPlantilla(index) {
 }
 
 function cargarEdicion(index) {
-  const state = window.templateStore.getState();
-  const plantilla = state[index];
-  document.querySelector("#template-title").value = plantilla.titulo;
-  document.querySelector("#template-hashtag").value = plantilla.hashtag;
-  document.querySelector("#template-message").value = plantilla.mensaje;
-  editIndex = index;
-  btnSave.innerHTML = '<i class="fas fa-edit"></i><span>Actualizar Plantilla</span>';
+   const state = window.templateStore.getState();
+   const plantilla = state[index];
+   document.querySelector("#template-title").value = plantilla.titulo;
+   document.querySelector("#template-hashtag").value = plantilla.hashtag;
+   document.querySelector("#template-message").value = plantilla.mensaje;
+   editIndex = index;
+   btnSave.innerHTML = '<i class="fas fa-edit"></i><span>Actualizar Plantilla</span>';
 }
 
 function renderizarUI(state) {
@@ -79,8 +79,30 @@ function renderizarUI(state) {
    containerTemplate.innerHTML = "";
    // Vamos a renderizarlo
    state.forEach((elmt, index) => {
+      let fondoColor = "bg-gray-50"; // color por defecto
+
+      /* Aca agregamos el color por plantillas
+      switch(elmt.hashtag.toLowerCase()), para evitar errores con mayusculas o minusculas
+      {fondoColor} para cambiar el color segun hashtag */
+
+      switch (elmt.hashtag.toLowerCase()) {
+         case "#bienvenida":
+            fondoColor = "bg-green-100";
+            break;
+         case "#promocion":
+            fondoColor = "bg-blue-100";
+            break;
+         case "#urgente":
+            fondoColor = "bg-red-100";
+            break;
+         case "#soporte":
+            fondoColor = "bg-yellow-100";
+            break;
+      }
+
       containerTemplate.innerHTML += `
-         <div class="bg-gray-50 rounded-lg p-6 border border-gray-200 hover:border-purple-300 transition duration-300 hover:shadow-md">
+         <div class="${fondoColor} rounded-lg p-6 border border-gray-200 hover:border-purple-300 transition duration-300 hover:shadow-md">
+
                <div class="flex flex-col lg:flex-row lg:items-start gap-4">
                   <div class="flex-1">
                         <div class="flex items-start justify-between mb-3">
@@ -119,6 +141,39 @@ function renderizarUI(state) {
                </div>
          </div>
       `;
+
+
+      /*  Aqui activamos el boton de copiar, que ya estaba agregado pero no funcionaba 
+      ("button:nth-child(1)") usamos eso para elegir el primer boton, que seria el de copiar */
+
+      const botonesCopiar = containerTemplate.querySelectorAll("button:nth-child(1)");
+
+      botonesCopiar.forEach((btn, i) => {
+         btn.addEventListener("click", () => {
+            const plantilla = state[i];
+
+            const texto = `Título: ${plantilla.titulo}
+Mensaje: ${plantilla.mensaje}
+Hashtag: ${plantilla.hashtag}`;
+
+            navigator.clipboard.writeText(texto)
+               .then(() => {
+                  Swal.fire('Copiado ✅', 'La plantilla se ha copiado al portapapeles', 'success');
+               })
+               .catch(err => {
+                  console.error("Error al copiar:", err);
+                  Swal.fire('Error ❌', 'No se pudo copiar la plantilla', 'error');
+               });
+         });
+      });
+
+
+
+
+
+
+
+
    });
    // Actualizacion de la estadistica
    const totalTemplates = document.querySelector("#total-templates")
